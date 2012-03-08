@@ -74,7 +74,7 @@ NOTE: Should a window pop up asking to select a mirror to download packages from
 
    
 (8) After the simulation is over, a message will pop up stating that 'The Simulation Is Over'. 
-    Final statistics will be computed and savet to a .csv file into the main folder.
+    Final statistics will be computed and saved to a .csv file into the main folder.
     You will also find all output vector and/or raster files inside the 'Raster' and 'Shapefiles' folders 
  
 
