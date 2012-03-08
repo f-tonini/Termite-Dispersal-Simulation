@@ -39,9 +39,7 @@ ______________________________________________________
 
 (2) Copy into this folder both the "IBM_Simple.r" and "myfunctions.r" files you have downloaded
 
-(3) Create a folder within "C:\Temp" and name it "Raster" (full path: C:\Temp\Raster)
-
-(4) Inside the "C:\Temp" directory, place either a vector or a raster layer representing non-suitable habitat 
+(3) Inside the "C:\Temp" directory, place either a vector or a raster layer representing non-suitable habitat 
     for the termite species
 
 **********************************************************************************************************************
@@ -49,9 +47,10 @@ NOTE: at this stage of code development, the only format accepted for vector lay
 For raster layers you can use any of the following: ('.grd','.asc','.sdat','.rst','.nc','.tif','.envi','.bil','.img')
 **********************************************************************************************************************
 	 
-(5) Inside the "C:\Temp" directory, place either a .txt (tab-delimited) or .csv file containing the coordinates 
+(4) Inside the "C:\Temp" directory, place either a .txt (tab-delimited) or .csv file containing the coordinates 
     of all the colonies you want to start your simulation from (geographic or projected coordinates).The file name MUST 
-    NOT HAVE BLANK SPACES and NOT CONTAIN the symbol '.' Otherwise, the code will not recognize the file correctly.
+    NOT HAVE BLANK SPACES NOR CONTAIN the symbol '.' Otherwise, the code will not recognize the file correctly.
+    Also, if you use projected coordinate systems use label 'X' for easting and label 'Y' for northing.
 
 
 ******************************************************************************************************************
@@ -60,21 +59,22 @@ Associate the labels with the correct column...the code will assume that under t
 'latitude' you pasted the right numbers corresponding to 'latitude' values, not to a 'longitude' ones!!
 *****************************************************************************************************************
     
-(6) On console type setwd('C:/Temp') and click ENTER. Then type source('IBM_Simple.r') and press ENTER  
+(5) On console type setwd('C:/Temp') and click ENTER. Then type: source('IBM_Simple.r') and press ENTER  
  
 
-(7) The simulation starts: enter all parameters you are asked for and read carefully all the options you see
+(6) The simulation starts: enter all parameters you are asked for and read carefully all the options you see
 
 *************************************************************************************************************
 NOTE: Should a window pop up asking to select a mirror to download packages from, pick one that is close to
       your state/country and click OK
 *************************************************************************************************************
 
-(8) While the simulation is running you should see a progress bar advancing up to the last year of the simulation. 
+(7) While the simulation is running you should see a progress bar advancing up to the last year of the simulation. 
     At the same time, on console you can always keep track of what is happening and read possible warnings and error messages
    
-(9) After the simulation is over, you should read 'Simulation Is Over' on the console window 
-    and find all the results in the 'Raster' folder
+(8) After the simulation is over, a message will pop up stating that 'The Simulation Is Over'. 
+    Final statistics will be computed and savet to a .csv file into the main folder.
+    You will also find all output vector and/or raster files inside the 'Raster' and 'Shapefiles' folders 
 
 
 *******************************************************************************************************************

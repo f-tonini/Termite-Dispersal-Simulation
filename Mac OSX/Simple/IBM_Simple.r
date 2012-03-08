@@ -9,46 +9,61 @@
 # Software:     Tested successfully using R-2.14.0 64-bit version(http://www.r-project.org/)
 #--------------------------------------------------------------------------------------
 
-##Define a working directory
-##If you are in a Mac OSX/Linux environment make sure to specify the appropriate path
-##Always use either / or \\ to specify the path 
-setwd ('~/Desktop/Temp')
+##Define the main working directory
+##Make sure to specify the appropriate path using either / or \\ to specify the path 
+mainDir <- '~/Desktop/Temp'
+
+##Let's set the working directory
+setwd(file.path(mainDir))
 
 #Path to folders in which you want to save all your vector & raster files
-workdir_Raster <- '~/Desktop/Temp/Raster/'
-workdir_Shapefiles <- '~/Desktop/Temp/Shapefiles'
+workdir_Raster <- 'Raster'
+workdir_Shapefiles <- 'Shapefiles'
+
+##Create a physical copy of the subdirectory folder(s) where you save your output
+##If the directory already exists it gives a warning, BUT we can suppress it using showWarnings = FALSE
+dir.create(file.path(mainDir, workdir_Raster), showWarnings = FALSE)
+dir.create(file.path(mainDir, workdir_Shapefiles), showWarnings = FALSE)
 
 ##Use an external source file w/ all modules (functions) used within this script. 
 ##Use FULL PATH if source file is not in the same folder w/ this script
 source('myfunctions.R')
 
+##Load all required libraries
+print('Loading required libraries...')
+load.packages()
+
 ###Let's set all simulation parameters:
 
 ##First Year of Simulation (input from terminal console)
-cat('\nWhat Is The First Year Of Simulation?\n')
+cat('\nWhat is the first year of simulation?\n')
 start_time <- scan(n=1)
 
 ##Last Year of Simulation (input from terminal console)
 cat('\nWhat Is The Last Year Of Simulation?\n')
 end_time <- scan(n=1)
-while(end_time < start_time) {cat('\n!!Last Year Of Simulation Cannot Be Inferior To The First Year!!\n'); end_time <- scan(n=1)}
+while(end_time < start_time) {
+	tkmessageBox(title = "Warning", message = 'The last year of simulation cannot be inferior to the first year!...Please type again'
+				, icon = "warning", type = "ok")
+	end_time <- scan(n=1)
+}
 
 ##Set the age at which colonies start producing first swarmers
-cat('\nAt What Age Do Colonies Generate First Swarmers?\n')
+cat('\nAt what age do colonies generate the first swarmers?\n')
 ColAge_swarmers <- scan(n=1)
 
 ##Set the maximum life expectancy for a colony (input from terminal console)
-cat('\nWhat Is The Maximum Life Expectancy Of a Colony (In Years)?\n')
+cat('\nWhat is the maximum life expectancy of a colony (in years)?\n')
 MaxAge <- scan(n=1)
 
 ##Apply a radius representing the max attraction distance btw Males & Females
-cat('\nType Max Attraction Distance Between Males & Females (In meters)?\n')
+cat('\nType max attraction distance between males & females (in meters)?\n')
 radius <- scan(n=1)
-while(radius == 0) {cat('Attraction Distance Must Be > 0\n'); radius <- scan(n=1)}
-
-##Load all required libraries
-print('Loading Required Libraries...')
-load.packages()
+while(radius == 0) {
+	tkmessageBox(title = "Warning", message = 'The attraction distance must be > 0!...Please type again'
+				, icon = "warning", type = "ok")
+	radius <- scan(n=1)
+}
 
 ##Read background non-suitable habitat layer
 habitat_block <- read.NSHabitat()
@@ -65,7 +80,7 @@ extent <- simulation.extent()
 
 ##Check for max density of source colonies, based on the user input 
 ##This module returns a list (to access list elements use $ sign)
-cat('\nType The Maximum Colony Density --colonies per hectare (1ha = 100 sq. meters)\n')
+cat('\nType the maximum colony density in colonies per hectare (1ha = 100 sq. meters)\n')
 maxdensity <- scan(n=1)
 lst <- max.density.source()
 
@@ -76,8 +91,13 @@ maxdensity <- lst$maxdensity
 ##Define an empty vector in which we will store the total area covered at each time step
 area <- rep(0, (end_time - start_time) + 1)
 
+##If we only have ONE source of invasion, define an empty vector in which we will store the 
+##mean Eucl. dist. of all existing colonies from it, at each time step
+if (nrow(starting_colonies) == 1) avgdistSource <- rep(0, (end_time - start_time) + 1) 
+
 ##Create a Tk window element as a container
 root <- tktoplevel()
+tktitle(root) <- 'Single-Run Simulation'
 
 ##Define the label of the progress bar
 l <- tk2label(root)
@@ -110,13 +130,13 @@ for (year in seq(start_time,end_time)){
 		
 		##Save current colonies in a shapefile (.shp) file
 		##Using our shp.save() module
-		shp.save(workdir_Shapefiles, start_time)
+		shp.save(start_time)
 		
 		##Estimate the approx. area covered by current colonies in Km^2
 		##If writeRas=TRUE a raster file (.img or as defined in source file) is produced
 		Tot_area <- raster.save(colonies, start_time, writeRas=TRUE)
-		area[1] <- Tot_area
-			
+		area[(year-start_time)+1] <- Tot_area
+		
 		##Remove objects not needed from the memory
 		rm(Tot_area)
 			
@@ -138,7 +158,7 @@ for (year in seq(start_time,end_time)){
 		##Generate offspring for each existing colony
 		##Change the scenario to 'pessimistic' if colonies generate more individuals at a younger age
 		##(other scenarios can be defined within the script 'myfunctions.R' and can be manually changed)
-		pop <- offspring.generate(survival_prob = 0.01, male_prob = 0.5, scenario = 'optimistic', dist.mean = 200)
+		if (any(colonies$Age >= ColAge_swarmers)) pop <- offspring.generate(survival_prob = 0.01, male_prob = 0.5, scenario = 'optimistic', dist.mean = 200) else pop <- NULL
 		
 		##Configure the progress bar by updating its value 
 		##(the green bar will move 1 segment forward)
@@ -146,47 +166,55 @@ for (year in seq(start_time,end_time)){
 		tcl('update')
 		
 		##Only if there are AT LEAST two swarmers check for Male-Female within a 'radius' buffer
-		if (nrow(pop) > 0){
+		if (!is.null(pop)){
 			
 			##Check for Male-Female within a 'radius' buffer
 			new_colonies <- new.colonies.create()
 						
 			##Store new colonies in the main colony dataset
-			colonies <- new.colonies.stack()
+			if (nrow(new_colonies) > 0) {
 			
-			##Configure the progress bar by updating its value 
-			##(the green bar will move 1 segment forward)
-			tkconfigure(pb, value = 2)
-			tcl('update')
-				
-			##Uncomment one of the following modules when having only ONE source of invasion
-			##and you are interested in keeping ONLY colonies laying on the fringe:		
-			##colonies <- convex.hull(colonies) 
-				
-			##Check habitat suitability of current colonies
-			colonies <- habitat.survival(colonies)
+				colonies <- new.colonies.stack()
+					
+				##Check habitat suitability of current colonies
+				colonies <- habitat.survival(colonies)
+					
+				##Uncomment one of the following modules when having only ONE source of invasion
+				##and you are interested in keeping ONLY colonies laying on the fringe:		
+				##colonies <- convex.hull(colonies) 
+					
+				##If there are no colonies left exit the LOOP, set the new end_time to the current year
+				##and EXIT the LOOP
+				if (nrow(colonies) == 0) {
+					print(paste('No colonies survived at year', year))
+					Tot_area <- raster.save(colonies,year,writeRas=FALSE)
+					area[(year-start_time)+1] <- Tot_area
+					##EXIT the inner loop
+					break
+				}
 			
-			##If there are no colonies left exit the LOOP, set the new end_time to the current year
-			##and EXIT the LOOP
-			if (nrow(colonies) == 0) {
-				print(paste('No Colonies Survived At Year', year))
-				Tot_area <- raster.save(colonies,year,writeRas=FALSE)
-				area[(year-start_time)+1] <- Tot_area
-				##EXIT the inner loop
-				break
 			}
-		
+								
 			##Remove objects not needed from the memory 
-			rm(list=c('pop', 'new_colonies'))
-		}	
+			rm(list=c('pop', 'new_colonies'))	
+		}
+
+		##Configure the progress bar by updating its value 
+		##(the green bar will move 1 segment forward)
+		tkconfigure(pb, value = 2)
+		tcl('update')
 		
 		##Save current colonies in a .shp file
-		shp.save(workdir_Shapefiles, year)
+		shp.save(year)
 		
 		##Estimate the approx. area covered by current colonies in Km^2 (Point to Raster operation is done to estimate the area)
 		##Also, if writeRas=TRUE a raster file (.grd by default) is produced
 		Tot_area <- raster.save(colonies,year,writeRas=TRUE)
 		area[(year-start_time)+1] <- Tot_area
+		
+		##If we are starting with ONE source of invasion, calculate the mean Eucl. dist. of all colonies 
+		##from the source
+		if (nrow(starting_colonies) == 1) avgdistSource[(year-start_time)+1] <- dist.source(colonies)
 		
 		##Remove objects not needed from the memory
 		rm(Tot_area)
@@ -194,15 +222,14 @@ for (year in seq(start_time,end_time)){
 	}
 
 }
-	
-cat('\nSimulation Is Over!\n')
+
+tkmessageBox(title = "Message", message = 'The simulation is over!', icon = "info", type = "ok")	
+
+##Suppress the progress bar
+tkdestroy(root)
 
 ##Print on screen a summary of statistics
 summary.stats()
-
-
-
-
 
 
 

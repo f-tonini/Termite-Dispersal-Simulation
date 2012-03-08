@@ -32,7 +32,7 @@ load.packages <- function()
 	library(raster)			#Raster operation and I/O
 	#library(maptools)		#Shapefiles operation and I/O	
 	
-	cat('\nAll Libraries Have Been Loaded Successfully!\n')
+	cat('\nAll libraries have been installed/loaded!\n')
 }
 
 ##HABITAT/BACKGROUND LAYER MODULE
@@ -40,10 +40,21 @@ load.packages <- function()
 read.NSHabitat <- function()
 {
 	##Read typed layer from terminal console
-	cat('\nType the Name and Extension (e.g. .shp,.img,.grd, etc.) of the Non-Suitable Habitat Layer\n')
+	cat('\nType the name and extension (e.g. .shp,.img,.grd, etc.) of the non-suitable habitat layer\n')
 	layer_name <- scan(n=1,what='')
 
-	cat('Reading Layer...\n')
+	cat('Reading layer...\n')
+	
+	lst <- list.files(file.path(mainDir)) == layer_name
+	while (!any(lst)) {
+	
+		tkmessageBox(title = "Warning", message = paste('The layer you typed cannot be found in the main folder',
+					'Maybe you mispelled the name or forgot to add the extension...please try again', sep='\n')
+					, icon = "warning", type = "ok")
+		cat('\nType the name and extension (e.g. .shp,.img,.grd, etc.) of the non-suitable habitat layer\n')
+		layer_name <- scan(n=1,what='')
+		lst <- list.files(file.path(mainDir)) == layer_name
+	}
 	
 	##Define all accepted file formats (OGR & GDAL)
 	OGR_ext <- c('shp')
@@ -52,22 +63,16 @@ read.NSHabitat <- function()
 	##Strip the extension from the file name
 	file.ext <- unlist(strsplit(layer_name, '\\.'))[2]
 	
-	##If there is no extension ask the user to include it
-	while(is.na(file.ext)){
-		cat('You Forgot To Add The File Extension!...Please Type Again:\n')
-		layer_name <- scan(n=1,what='')
-		file.ext <- unlist(strsplit(layer_name, '\\.'))[2]
-	}
-	
 	##Strip the name from the file name
 	file.name <- unlist(strsplit(layer_name, '\\.'))[1]
 	
 	##If the file extension is not one of the formats defined above
 	##give error message
-	while(!file.ext %in% c(OGR_ext,GDAL_ext)){
-		cat('The extension of the background layer MUST be one of the following:\n')
-		cat(c(OGR_ext,GDAL_ext))
-		stop('Change format and restart the simulation')
+	if(!file.ext %in% c(OGR_ext,GDAL_ext)){
+		stop()
+		tkmessageBox(title = "Error", message = paste('The extension of the background layer MUST be one of the following:',
+			'.shp , .grd , .asc , .sdat , .rst , .nc , .tif , .envi , .bil , .img',
+		    'Change the format and restart the simulation...', sep='\n'), icon = "error", type = "ok")
 	}
 		
 	##If the file extension is .shp read the vector file using
@@ -92,8 +97,10 @@ read.NSHabitat <- function()
 		##Ask the user to define parameters of a Projected coord. system
 		if(substring(proj4string(habitat_block),8,14) == 'longlat'){
 			
-			cat('\nIn order to run the simulation the background layer must be projected\n')
-			cat('Please Define The Following Projection Parameters:\n')
+			tkmessageBox(title = "Warning", message = paste('The background layer must be projected!',
+						'Please define the projection parameters on console', sep='\n')
+						,icon = "warning", type = "ok")
+			
 			cat('UTM zone (e.g. 17):\n')
 			UTM_zone <- scan(n=1,what='')
 			cat('Ellipsoid (e.g. GRS80):\n')
@@ -110,9 +117,10 @@ read.NSHabitat <- function()
 		
 	}else{
 		
-		cat('\nBackground layer not georeferenced...\n')
-		cat('\nIn order to run the simulation the background layer must be projected\n')
-		cat('Please Define The Following Projection Parameters:\n')
+		tkmessageBox(title = "Warning", message = paste('The background layer does not have any projection!',
+						'Please define the projection parameters on console', sep='\n')
+						,icon = "warning", type = "ok")
+		
 		cat('UTM zone (e.g. 17):\n')
 		UTM_zone <- scan(n=1,what='')
 		cat('Ellipsoid (e.g. GRS80):\n')
@@ -138,36 +146,42 @@ read.file <- function(random.age)
 {
 	
 	##Read typed layer from terminal console
-	cat('\nType the Name and Extension (e.g. coords.txt) of the file \n')
+	cat('\nType the name and extension of the file containing the initial colonies\n')
+	cat('The file MUST be either a tab-delimited .txt file or a .csv\n')
 	input <- scan(n=1,what='')
 	
-	cat('\nReading Input File...')
+	cat('\nReading Input File...\n')
+	
+	lst <- list.files(file.path(mainDir)) == input
+	while (!any(lst)) {
+	
+		tkmessageBox(title = "Warning", message = paste('The layer you typed cannot be found in the main folder',
+					'Maybe you mispelled the name or forgot to add the extension...please try again', sep='\n')
+					, icon = "warning", type = "ok")
+		cat('\nType the name and extension (e.g. .shp,.img,.grd, etc.) of the non-suitable habitat layer\n')
+		input <- scan(n=1,what='')
+		lst <- list.files(file.path(mainDir)) == input
+	}
 	
 	##Define all accepted file formats
 	Extensions <- c('txt','csv')
 	
 	##Strip the extension from the file name
 	file.ext <- unlist(strsplit(input, '\\.'))[2]
-	
-	##If there is no extension ask the user to include it
-	while(is.na(file.ext)){
-		cat('You Forgot To Add The File Extension!...Please Type Again:\n')
-		input <- scan(n=1,what='')
-		file.ext <- unlist(strsplit(input, '\\.'))[2]
-	}
 		
 	##If the file extension is not one of the formats defined above
 	##give error message
-	while(!file.ext %in% Extensions){
-		cat('The extension of the background layer MUST be one of the following:\n')
-		cat(Extensions)
-		stop('Change format and restart the simulation')
+	if(!file.ext %in% Extensions){
+		tkmessageBox(title = "Error", message = paste('The file MUST be either a tab-delimited .txt file or a .csv'
+					,'Please convert the file to the right format and restart the simulation',sep='\n')
+					, icon = "error", type = "ok")
+		stop()		
 	}
 	
 	if (file.ext == 'txt') {
 		starting_colonies <- as.matrix(read.delim(file = input, header = TRUE, stringsAsFactors = FALSE)) #For TAB-delimited files
 	}else if (file.ext == 'csv'){
-		starting_colonies <- as.matrix(read.csv(file = input, header = TRUE, stringsAsFactors = FALSE)) #For Comma-delimited files
+		starting_colonies <- as.matrix(read.table(file = input, header = TRUE, stringsAsFactors = FALSE, sep=',')) #For Comma-delimited files
 	}
 	
 	##Grab the header row and change it to upper-case, as a default
@@ -177,18 +191,31 @@ read.file <- function(random.age)
 	##Check for label inconsistencies and/or errors:
 	
 	##If both header labels do not correspond to any of the ones defined in 'correct_labels' give error message
-	if( sum(substring(header,1,3) %in% correct_labels) != 2 ) stop('<<ERROR: Wrong Coordinate Labels in Uploaded File!>>')
+	if( sum(substring(header,1,3) %in% correct_labels) != 2 ) {
+		tkmessageBox(title = "Error", message = paste('Wrong or missing coordinate labels in the uploaded file!',
+					'Please correct the original file and restart the simulation', sep='\n')
+					, icon = "error", type = "ok")
+		stop()
+	}
 	
 	##If header labels are duplicates give error message
 	if (sum(substring(header,1,3) == 'LAT') == 2 | sum(substring(header,1,3) == 'LON') == 2 | sum(substring(header,1,3) == 'LNG') == 2 
-		| sum(header == 'X') == 2 | sum(header == 'Y') == 2 ) stop('<<ERROR: Incorrect Labels! Labels Cannot Be Identical!>>')
+		| sum(header == 'X') == 2 | sum(header == 'Y') == 2 ) {
+		tkmessageBox(title = "Error", message = paste('Incorrect labels! Coordinate labels cannot be identical!',
+					'Please correct the original file and restart the simulation', sep='\n')
+					, icon = "error", type = "ok")
+		stop()
+	}
 	
 	##If the header labels do not correspond to LAT-LON/LON-LAT/LAT-LNG/LNG-LAT/X-Y/Y-X give error message
 	if ((any(substring(header,1,3) == 'LAT') & any(header == 'Y')) | (any(substring(header,1,3) == 'LAT') & any(header == 'X')) 
 		| (any(substring(header,1,3) == 'LON') & any(header == 'X')) | (any(substring(header,1,3) == 'LON') & any(header == 'Y'))
 		| (any(substring(header,1,3) == 'LNG') & any(header == 'X')) | (any(substring(header,1,3) == 'LNG') & any(header == 'Y'))){
 		
-		stop('<<ERROR: Wrong Coordinate Labels in Uploaded File!>>')	
+		tkmessageBox(title = "Error", message = paste('Incorrect labels! Some coordinate label is mispelled or not well defined',
+					'Please correct the original file and restart the simulation', sep='\n')
+					, icon = "error", type = "ok")
+		stop()
 	}
 	
 	##Store the two coordinate values into 2 different variables (regardless of whether they are lat-lon or x-y)
@@ -221,19 +248,19 @@ read.file <- function(random.age)
 	##If coord. system is geographic project coords according to the background habitat-layer
 	if ( any(substring(header,1,3) == "LAT") & (any(substring(header,1,3) == "LON") | any(substring(header,1,3) == "LNG") ) ){
 		
-		cat('Detected Geographic Coordinates!\n')
-		cat('Projecting Coordinates...\n')
+		cat('Detected geographic coordinates!\n')
+		cat('Projecting coordinates...\n')
 		
 		##Use the project() function from 'rgdal' package to project geog.coordinates...use coord system of the habitat backgroud layer
 		Matr_proj <- project(starting_colonies, proj4string(habitat_block), inv = FALSE)
 			
 		starting_colonies[,1] <- Matr_proj[,1]
 		starting_colonies[,2] <- Matr_proj[,2]
-		cat('Coordinates Projected According to the Background Layer!\n')
+		cat('Coordinates projected according to the background layer!\n')
 	
 	}
 	
-	cat('Creating Colonies Dataset...\n')
+	cat('Creating colonies dataset...\n')
 	
 	##Convert the input matrix to a dataframe
 	starting_colonies <- as.data.frame(starting_colonies)
@@ -250,7 +277,7 @@ read.file <- function(random.age)
 	##Check what age to be assigned to each colony and add an Age variable to the dataframe
 	if (random.age == 'random') starting_colonies$Age <- sample(0:MaxAge,nrow(starting_colonies),replace=TRUE) else starting_colonies$Age <- as.integer(random.age)
 	
-	cat('Dataset Created!\n')
+	cat('Dataset created!\n')
 	
 	return(starting_colonies)
 }
@@ -260,8 +287,6 @@ read.file <- function(random.age)
 ##Colonies falling within non-suitable areas are eliminated from the dataset
 habitat.survival <- function(input)
 {
-	cat('\n')
-	print('Checking Habitat Suitability...')
 	
 	SpatPntDataFrame <- input
 	
@@ -283,12 +308,16 @@ habitat.survival <- function(input)
 	if (length(inside.layer) > 0) {
 	
 		input <- input[-inside.layer,]
-		input$ID_col <- seq(1,nrow(input))
-		print('Removed Colonies From Non-suitable Habitat!')
+		
+		if (nrow(input) == 0){
+			tkmessageBox(title = "Warning", message = paste('None of the sources of invasion fall in a suitable habitat!',
+						'Please select either other sources or a different background layer. Restart the simulation.', sep='\n')
+						, icon = "warning", type = "ok")
+			stop()
+		
+		}else{input$ID_col <- seq(1,nrow(input))}
+		
 	}
-	
-	print('Check Completed!')
-	cat('\n')
 	
 	return(input)
 }
@@ -297,13 +326,13 @@ habitat.survival <- function(input)
 ##This module is used to define the area extent for the simulation
 simulation.extent <- function(cellsize=100) #default = 100 meters
 {
-	cat('\nDefine The Simulation Extent...\n')
+	cat('\nDefine the simulation extent...\n')
 	
 	##Create a list (we will save the desired outputs inside) 
 	extent <- list()
 	
-	cat('How Would You Like to Define The Simulation Extent?\n(Option 2 Recommended If Non-Suitable Habitat Layer Is Big!)\n')
-	choice <- menu(c('Use The Whole Extent Of The Habitat-Suitability Layer','Specify a Distance From The Center of The Study Area'))
+	cat('How would you like to define the simulation extent?\n(Option 2 recommended if non-suitable habitat layer is big!)\n')
+	choice <- menu(c('Use the whole extent of the habitat-suitability layer','Specify a distance from the center of the study area'))
 	if (choice == 1) {
 		
 		print('The simulation will stop as soon as a simulation boundary is reached!')
@@ -354,19 +383,49 @@ simulation.extent <- function(cellsize=100) #default = 100 meters
 		##Calculate the nbr of rows of the simulation grid
 		nrows <- length(seq(extent$Bottom,extent$Top,by=cellsize)) - 1
 		
+		X <- starting_colonies$X
+		Y <- starting_colonies$Y
+		
+		##Define the simulation extent as a mask
+		msk <- data.frame(x = c(extent$Left,extent$Right,extent$Right,extent$Left), 
+					  y = c(extent$Bottom,extent$Bottom,extent$Top,extent$Top))
+		
+		##Use the point.in.polygon() function ('sp' package) to check
+		##which points fall inside the simulation extent mask
+		idx <- point.in.polygon(point.x = starting_colonies$X, 
+				  point.y = starting_colonies$Y, pol.x = msk[,1], pol.y = msk[,2])
+				  
+		##Until one or more points fall outside the mask, ask the user to increase the distance from the centroid so that all points are included
+		if (any(idx==0)) {
+			
+			tkmessageBox(title = "Error", message = paste('One or more colonies lay outside the simulation extent you defined!',
+					'Please restart the simulation and choose a bigger layer as extent', sep='\n')
+					, icon = "error", type = "ok")
+			stop()
+		}
+		
 					
 	}else{
 		
-		cat('Specify a BIG-ENOUGH extent...the simulation will stop as soon as a simulation boundary is reached!\n')
+		cat('Specify a sufficiently large extent...the simulation will stop as soon as a simulation boundary is reached!\n')
 		centroid.X <- mean(starting_colonies$X)
 		centroid.Y <- mean(starting_colonies$Y)
 		
-		cat('\nHorizontal Distance From The Center of The Point Cloud (in Km):\n')
+		cat('\nHorizontal distance from the center of the point cloud (in Km):\n')
 		DistanceX <- scan(n=1)
-		if (DistanceX <= 0) {cat('Error: The Distance Must Be Greater Than 0\n'); DistanceX <- scan(n=1)}
-		cat('\nVertical Distance From The Center of The Point Cloud (in Km):\n')
+		if (DistanceX <= 0) {
+			tkmessageBox(title = "Error", message = paste('The distance must be greater than 0!', 'Please type again',sep='\n'),
+						icon = "error", type = "ok")
+			DistanceX <- scan(n=1)
+		}
+		cat('\nVertical distance from the center of the point cloud (in Km):\n')
 		DistanceY <- scan(n=1)
-		if (DistanceY <= 0) {cat('Error: The distance must be greater than 0\n'); DistanceY <- scan(n=1)}
+		if (DistanceY <= 0) {
+			tkmessageBox(title = "Error", message = paste('The distance must be greater than 0!', 'Please type again',sep='\n'),
+						icon = "error", type = "ok")
+			DistanceY <- scan(n=1)
+		}
+		
 		
 		##Transform Km to meters
 		DistanceX <- DistanceX * 1000
@@ -419,14 +478,24 @@ simulation.extent <- function(cellsize=100) #default = 100 meters
 		##Until one or more points fall outside the mask, ask the user to increase the distance from the centroid so that all points are included
 		while (any(idx==0)) {
 			
-			cat('WARNING: one or more colonies lay outside the simulation extent you defined!\n')
-			cat('Please increase the size:\n')
-			cat('\nHorizontal Distance From The Center of The Point Cloud (in Km):\n')
+			tkmessageBox(title = "Warning", message = paste('One or more colonies lay outside the simulation extent you defined!',
+					'Please type a bigger extent', sep='\n')
+					, icon = "warning", type = "ok")
+					
+			cat('\nHorizontal distance from the center of the point cloud (in Km):\n')
 			DistanceX <- scan(n=1)
-			if (DistanceX <= 0) {cat('Error: The Distance Must Be Greater Than 0\n'); DistanceX <- scan(n=1)}
-			cat('\nVertical Distance From The Center of The Point Cloud (in Km):\n')
+			if (DistanceX <= 0) {
+				tkmessageBox(title = "Error", message = paste('The distance must be greater than 0!', 'Please type again',sep='\n'),
+							icon = "error", type = "ok")
+				DistanceX <- scan(n=1)
+			}
+			cat('\nVertical distance from the center of the point cloud (in Km):\n')
 			DistanceY <- scan(n=1)
-			if (DistanceY <= 0) {cat('Error: The distance must be greater than 0\n'); DistanceY <- scan(n=1)}
+			if (DistanceY <= 0) {
+				tkmessageBox(title = "Error", message = paste('The distance must be greater than 0!', 'Please type again',sep='\n'),
+							icon = "error", type = "ok")
+				DistanceY <- scan(n=1)
+			}
 			
 			##Transform Km to meters
 			DistanceX <- DistanceX * 1000
@@ -481,7 +550,7 @@ simulation.extent <- function(cellsize=100) #default = 100 meters
 	}
 	
 	cat('\n')
-	cat('Simulation Extent Defined:\n')
+	cat('Simulation extent defined:\n')
 	cat(paste('Left:',round(extent$Left),'\n'))
 	cat(paste('Right:',round(extent$Right),'\n'))
 	cat(paste('Bottom:',round(extent$Bottom),'\n'))
@@ -501,9 +570,7 @@ max.density.source <- function(cellsize=100) #default = 100 meters
 	##Initialize an empty list in which to save all desired outputs
 	lst <- list()
 	
-	cat('\n')
-	print('Checking Density of Source Colonies...')
-	cat('\n')
+	cat('\nChecking density of source colonies...\n')
 	
 	##Using the simulation extent define grid breaks (based on cellsize resolution)	
 	xbreaks <- seq(extent$Left,extent$Right,by=cellsize)
@@ -538,22 +605,20 @@ max.density.source <- function(cellsize=100) #default = 100 meters
 	##Check if any quadrat has a number of points exceeding the max density as by user input
 	if(any(qX > maxdensity)){
 		
-		cat('=============================================================================\n')
-		print('WARNING: The Colonies Uploaded From File Have A Density Higher Than What You Specified...')
-		print('Suggestion: Maybe Not All Uploaded Points Are Different Colonies!! If That Is the Case, Pick Option 2')
-		cat('=============================================================================\n')
-		cat('\n')
-		print('What Would You Like To Do?')
-		choice <- menu(c('I Am Sure All Uploaded Points Are Different Colonies. Keep All Points And Find Automatically the Maximum Density',
-						paste('Remove Points To Match The Density Of',maxdensity,'Colonies /ha'))) 
+		tkmessageBox(title = "Warning", message = paste('The starting colonies read from file have a higher density...',
+					'Maybe not all points are actual colonies!', 'If that is the case pick Option 2', sep='\n')
+					, icon = "warning", type = "ok")
+		
+		cat('\nWhat would you like to do? Choose an option\n')
+		choice <- menu(c('I am sure all points represent different colonies. Keep them as they are and find automatically the observed maximum density', paste('Remove some of the points to match the density of maximum',maxdensity,'colonies /ha'))) 
 		
 		##If option 1 is picked calculate the observed maximum density
 		if (choice == 1){
 			
 			NewMaxDen <- max(qX)
 			cat('\n')
-			cat(paste('The Max. Observed Density Is:',NewMaxDen,'Colonies /ha...\nWhat Would You Like To Do?')) 
-			choice2 <- menu(c('Go Ahead With This Max. Density',paste('Remove Points To Match the Density Of',maxdensity,'Colonies /ha')))
+			cat(paste('The max. observed density Is:',NewMaxDen,'colonies /ha...\nWhat would you like to do?')) 
+			choice2 <- menu(c('Go ahead with this max. density',paste('Remove points to match the density of',maxdensity,'colonies /ha')))
 			
 			if (choice2 == 2) choice <- choice2 else maxdensity <- NewMaxDen
 			
@@ -615,6 +680,7 @@ max.density.source <- function(cellsize=100) #default = 100 meters
 			##Overwrite the old colony IDs w/ new ones based on the nbr of colonies not eliminated
 			starting_colonies$ID_col <- seq(1,nrow(starting_colonies))
 			
+			cat('Removed colonies to match specified max density!...\n')
 		}
 				
 	}
@@ -623,6 +689,8 @@ max.density.source <- function(cellsize=100) #default = 100 meters
 	##To the empty list
 	lst$maxdensity <- maxdensity
 	lst$starting_colonies <- starting_colonies
+	
+	cat('Done!...\n')
 	
 	return(lst)	
 }
@@ -654,8 +722,10 @@ raster.save <- function(input, year, writeRas=TRUE, cellsize=100) #by function d
 		##A Point-To-Raster operation is done to estimate the overall area
 		PntToRaster <- rasterize(coords, RastLayer, background=0) #by default (1-presence NA-absence) #
 		
-		if (writeRas == TRUE) writeRaster(PntToRaster,filename=paste(workdir_Raster,'Run',run,'_',year,'.img',sep=''),
-										format='HFA', datatype='LOG1S', overwrite=TRUE)
+		##Path to filename
+		filename <- file.path(mainDir, workdir_Raster, paste('Run',run,'_',year,'.img',sep=''))
+		
+		if (writeRas == TRUE) writeRaster(PntToRaster, filename=filename, format='HFA', datatype='LOG1S', overwrite=TRUE)
 		
 		Tot_area_ha <- sum(PntToRaster@data@values != 0)
 		Tot_area_km2 <- Tot_area_ha/100
@@ -665,10 +735,12 @@ raster.save <- function(input, year, writeRas=TRUE, cellsize=100) #by function d
 		##Create a raster using the raster() function of the 'raster' package
 		RastLayer <- raster(matrix(0),xmn=extent$Left, xmx=extent$Right, ymx=extent$Top, ymn=extent$Bottom, ncol=ncols, nrow=nrows, crs=CRS)
 		
+		##Path to filename
+		filename <- file.path(mainDir, workdir_Raster, paste('Run',run,'_',year,'.img',sep=''))
+		
 		##Convert points-to-raster
 		##A Point-To-Raster operation is done to estimate the overall area
-		if (writeRas == TRUE) writeRaster(RastLayer,filename=paste(workdir_Raster,'Run',run,'_',year,'.img',sep=''),
-										format='HFA', datatype='LOG1S', overwrite=TRUE)
+		if (writeRas == TRUE) writeRaster(RastLayer, filename=filename, format='HFA', datatype='LOG1S', overwrite=TRUE)
 		
 		Tot_area_ha <- 0
 		Tot_area_km2 <- 0
@@ -676,6 +748,24 @@ raster.save <- function(input, year, writeRas=TRUE, cellsize=100) #by function d
 	
 	return(Tot_area_km2)
 }	
+
+##DISTANCE FROM SINGLE SOURCE MODULE
+##This module is used to calculate the mean euclidean distance of all existing colonies at the current time step
+##from a SINGLE source of invasion. Therefore, this will not be used by the main script if you have more than one source
+dist.source <- function(input)
+{
+	if (any(input$Dist_source == 0)) {
+	
+		AvgEuclDist <- mean(input$Dist_source[-which(input$Dist_source == 0)])	
+		if (!is.finite(AvgEuclDist)) AvgEuclDist <- 0  
+	
+	}else {AvgEuclDist <- mean(input$Dist_source)}	
+	
+	##transform the distance from meters >> Km
+	AvgEuclDist <- AvgEuclDist/1000
+		
+	return(AvgEuclDist)
+}
 
 ##AGE & TIME INCREASE MODULE
 ##This module is used to increase colony age and timestep by 1
@@ -698,7 +788,6 @@ age.increase <- function()
 	colonies <- rbind(colonies,present_colonies)
 		
 	return(colonies)
-
 }
 
 ##SWARMER GENERATION MODULE
@@ -707,44 +796,42 @@ offspring.generate <- function(survival_prob, male_prob, scenario, dist.mean)
 {
 	out <- list()
 	
-	if (any(colonies$Age >= ColAge_swarmers)){
-	
-		if (scenario == 'optimistic'){
+	if (scenario == 'optimistic'){
 				
-			alates <- ifelse(colonies$Age < ColAge_swarmers, 0, 100000)
-			alates <- ifelse(colonies$Age >= ColAge_swarmers & colonies$Age < 10, 1000, alates)
-			alates <- ifelse(colonies$Age >= ColAge_swarmers & colonies$Age < 15, 10000, alates)
+		alates <- ifelse(colonies$Age < ColAge_swarmers, 0, 100000)
+		alates <- ifelse(colonies$Age >= ColAge_swarmers & colonies$Age < 10, 1000, alates)			
+		alates <- ifelse(colonies$Age >= ColAge_swarmers & colonies$Age < 15, 10000, alates)
 			
-		}else if (scenario == 'pessimistic'){
+	}else if (scenario == 'pessimistic'){
 			
-			#TODO:: CHANGE IF NEEDED
-			alates <- ifelse(colonies$Age < ColAge_swarmers, 0, 100000)
-			alates <- ifelse(colonies$Age >= ColAge_swarmers & colonies$Age < ColAge_swarmers * 2, 10000, alates)
-			alates <- ifelse(colonies$Age >= ColAge_swarmers & colonies$Age < ColAge_swarmers * 3, 50000, alates)
-		}
-		
-		indiv <- alates * survival_prob
-
-		X_temp <- rep(colonies$X, indiv)
-		Y_temp <- rep(colonies$Y, indiv)
-
-		#Initialize two coordinate variables based on the established (or existing) colonies... now as vectors of the entire data frame size
-		distance <- rexp(sum(indiv), rate = 1/dist.mean)
-		theta <- runif(sum(indiv), 0, 2 * pi)
-		C <- cos(theta)
-		S <- sin(theta)
-		
-		#XY coords (meters) using polar coordinate transformations
-		X <- X_temp + S * distance
-		Y <- Y_temp + C * distance
-		
-		pop <- data.frame(X,Y)  
-		pop$Sex <- rbinom(sum(indiv),1,male_prob)
-		pop$ID <- 1:nrow(pop)
-		
-		pop$X <- round(pop$X,2)
-		pop$Y <- round(pop$Y,2)
+		#TODO:: CHANGE IF NEEDED
+		alates <- ifelse(colonies$Age < ColAge_swarmers, 0, 100000)
+		alates <- ifelse(colonies$Age >= ColAge_swarmers & colonies$Age < ColAge_swarmers * 2, 10000, alates)
+		alates <- ifelse(colonies$Age >= ColAge_swarmers & colonies$Age < ColAge_swarmers * 3, 50000, alates)
 	}
+		
+	indiv <- alates * survival_prob
+
+	X_temp <- rep(colonies$X, indiv)
+	Y_temp <- rep(colonies$Y, indiv)
+
+	#Initialize two coordinate variables based on the established (or existing) colonies... now as vectors of the entire data frame size
+	distance <- rexp(sum(indiv), rate = 1/dist.mean)
+	theta <- runif(sum(indiv), 0, 2 * pi)
+	C <- cos(theta)
+	S <- sin(theta)
+		
+	#XY coords (meters) using polar coordinate transformations
+	X <- X_temp + S * distance
+	Y <- Y_temp + C * distance
+		
+	pop <- data.frame(X,Y)  
+	pop$Sex <- rbinom(sum(indiv),1,male_prob)
+	pop$ID <- 1:nrow(pop)
+		
+	pop$X <- round(pop$X,2)
+	pop$Y <- round(pop$Y,2)
+
 	
 	out$pop <- pop
 	
@@ -978,10 +1065,11 @@ convex.hull <- function(input)
 ##This module is used to calculate required stastistics on simulation results
 summary.stats <- function()
 {
-	#Now let's have a look at the final stats
-	cat('\n\n')
-	cat('---Summary MonteCarlo Simulation---\n')
-	cat('\n')
+	
+	#require the module needed to output results in a spreadsheet-like table on screen
+	#and initialize and empty tclArray
+	tclRequire("Tktable")
+	tclarray <- tclArray()
 		
 	#Now let's have a look at the final stats
 	simYears <- seq(start_time,end_time)
@@ -994,56 +1082,135 @@ summary.stats <- function()
 	Area_dataset$MEAN <- round(MEAN,2)
 	Area_dataset$SD <- round(SD,2)
 	Area_dataset$CV <- round(SD / MEAN, 2)
+	
+	if (nrow(Area_dataset) > 1) {
 		
-	colnames(Area_dataset) <- c('Year','Area(Km^2)','St.Dev.(Km^2)','CV')
+		Area_dataset$areaSpeed <- 0
+		Area_dataset$percGrowth <- 0
 		
-	#Print on console the dataset
-	cat('Descriptive Statistics:\n\n')
-	print(Area_dataset)
-	cat('\n')
-		
-	if (length(simYears) > 1) {
+		if (nrow(starting_colonies) == 1) {
 			
-		#Store the information about the rate of radial and areal expansion covered after each year
-		Speed_dataset <- data.frame(Year = simYears)
-		Speed_dataset$areaSpeed <- 0
-		#Speed_dataset$linearSpeed <- 0
-		Speed_dataset$percGrowth <- 0
-			
-		for (i in 2:length(simYears)){
+			SD2 <- sapply(avgdistSource, sd)
+			MEAN2 <- sapply(avgdistSource, mean)
+			Area_dataset$MEAN2 <- round(MEAN2,2)
+			Area_dataset$SD2 <- round(SD2,2)
+			CV2 <- round(SD2 / MEAN2, 2)
+			if(!is.finite(CV2)) Area_dataset$CV2 <- 0 else Area_dataset$CV2 <- round(SD2 / MEAN2, 2)
+	
+			Area_dataset$EuclDistSpeed <- 0 
+			Area_dataset$EuclDistGrowth <- 0
+		}
+		
+		for (i in 2:nrow(Area_dataset)){
 					
-			Speed_dataset$areaSpeed[i] <- round(MEAN[i] - MEAN[i-1], 2) #Km^2 / year				
-			#Speed_dataset$linearSpeed[i] <- round(sqrt(Speed_dataset$areaSpeed[i]), 2) #Km / year
-			Growth <- Speed_dataset$areaSpeed[i] / MEAN[i-1]
-			Speed_dataset$percGrowth[i] <- round(Growth * 100)
+			Area_dataset$areaSpeed[i] <- round(MEAN[i] - MEAN[i-1], 2) #Km^2 / year				
+			Growth <- (MEAN[i] - MEAN[i-1]) / MEAN[i-1]
+			Area_dataset$percGrowth[i] <- round(Growth * 100)
+			
+			if (nrow(starting_colonies) == 1) {
+				
+				Area_dataset$EuclDistSpeed[i] <- round(MEAN2[i] - MEAN2[i-1], 2)  #Km / year	
+				GrowthEucl <- (MEAN2[i] - MEAN2[i-1]) / MEAN2[i-1]
+				if (!is.finite(GrowthEucl)) GrowthEucl <- 0
+				Area_dataset$EuclDistGrowth[i] <- round(GrowthEucl * 100)
+			}
 			
 		}
 		
-		colnames(Speed_dataset) <- c('Year','Km^2/year','Areal Growth (%)')
-				
-		cat('Expansion Speed:\n\n')
-		print(Speed_dataset)
+		if (nrow(starting_colonies) == 1) {
+			colnames(Area_dataset) <- c('Years','Avg. Area (Km^2)', 'St.Dev. Area (Km^2)', 'CV Area', 'Avg. Km^2/year', 
+								'Avg. Areal Growth (%)','Overall Avg. Dist. Source (Km)', 'St.Dev. Dist. (Km^2)',
+								'CV Dist', 'Avg. Km/year','Overall Avg. Speed Growth (%)')
 			
-		##For Overall average speed (as if it is expanding at constant avg speed every year)
-		num <- mean(area.dataset[length(simYears)]) - mean(area.dataset[1]) 
-		denom <- end_time - start_time
-		Overall_speed2 <- num/denom
-		Overall_speed2 <- Overall_speed2[[1]]  #Km^2 / year
-		#Overall_speed <- sqrt(Overall_speed2)  #Km / year
-				
-		cat('\nOverall Speed (Km^2/year):\n')
-		print(round(Overall_speed2,2))
-		#cat('\nOverall Speed (Km/year):\n')
-		#print(round(Overall_speed,2))
+			var1 <- c('Years', Area_dataset[,1])
+			var2 <- c('Avg_Area_Km^2', Area_dataset[,2])
+			var3 <- c('St.Dev_Area_Km^2', Area_dataset[,3])
+			var4 <- c('CV_Area', Area_dataset[,4])
+			var5 <- c('Avg.Km^2/year', Area_dataset[,5])
+			var6 <- c('Avg.Areal_Growth(%)', Area_dataset[,6])
+			var7 <- c('Ovr.Avg.Dist.Source_Km',Area_dataset[,7])
+			var8 <- c('St.Dev_Dist_Km^2',Area_dataset[,8])
+			var9 <- c('CV Dist',Area_dataset[,9])
+			var10 <- c('Avg.Km/year',Area_dataset[,10])
+			var11 <- c('Ovr.Avg.Speed_Growth(%)',Area_dataset[,11])
+			
+			myArray <- c(var1,var2,var3,var4,var5,var6,var7,var8,var9,var10,var11)
+			
+		}else{
+			colnames(Area_dataset) <- colnames(Area_dataset) <- c('Years','Avg. Area (Km^2)', 'St.Dev. Area (Km^2)',
+										'CV Area', 'Avg. Km^2/year', 'Avg. Areal Growth (%)')
+			var1 <- c('Years', Area_dataset[,1])
+			var2 <- c('Avg_Area_Km^2', Area_dataset[,2])
+			var3 <- c('St.Dev_Area_Km^2', Area_dataset[,3])
+			var4 <- c('CV_Area', Area_dataset[,4])
+			var5 <- c('Avg.Km^2/year', Area_dataset[,5])
+			var6 <- c('Avg.Areal_Growth(%)', Area_dataset[,6])
 		
-		#This part is run only in the case of an invasion starting from ONE source
-		#So that we can use the average euclidean distance from the center (invasion point)
-		#when comparing the expasion rate of simulation Vs. theoretical uniform distribution
-		###if (nrow(starting_colonies) == 1)###
-		#Radial Increase general formula: [sqrt(A1)/pi - sqrt(A0)/pi ] / t1- t0	
+			myArray <- c(var1,var2,var3,var4,var5,var6)	
+		}
 		
+		dim(myArray) <- c(nrow(Area_dataset) + 1, ncol(Area_dataset))
+		
+		for (i in 0:nrow(myArray)-1) {
+			for (j in 0:ncol(myArray)-1) tclarray[[i,j]] <- myArray[i+1,j+1]
+		}
+	
+	
+	}else{
+	
+		colnames(Area_dataset) <- c('Years','Avg. Area (Km^2)', 'St.Dev. Area (Km^2)','CV Area')
+		var1 <- c('Years', Area_dataset[,1])
+		var2 <- c('Avg_Area_Km^2', Area_dataset[,2])
+		var3 <- c('St.Dev_Area_Km^2', Area_dataset[,3])
+		var4 <- c('CV_Area', Area_dataset[,4])
+		
+		myArray <- c(var1,var2,var3,var4)
+		dim(myArray) <- c(nrow(Area_dataset) + 1, ncol(Area_dataset))
+		
+		for (i in 0:nrow(myArray)-1) {
+			for (j in 0:ncol(myArray)-1) tclarray[[i,j]] <- myArray[i+1,j+1]
+		}
 	}
+	
+	#create a new tk window and store the table with result into it
+	#tt <- tktoplevel()
+	#tktitle(tt) <- 'Final Statistics'
+	#table1 <- tkwidget(tt,"table",variable=tclarray,rows=nrow(myArray),cols=ncol(myArray),titlerows=1,
+	#selectmode="extended",colwidth=20,background="white")
+	#pack it and show on screen
+	#tkpack(table1)
+	
+	#onSave <- function() {
 		
+		#write.table(Area_dataset, 'Table.csv', row.names=F, sep=',')
+		#tkmessageBox(title = "Message", message = paste('Table saved to main folder!', 
+		#			'Please check the R console for next question',sep='\n'), icon = "info", type = "ok")
+		#tkdestroy(tt)
+    #}
+	
+    #onClose <- function() {
+		#tkmessageBox(title = "Message", message = 'Please check the R console for next question', icon = "info", type = "ok")
+		#tkdestroy(tt)
+	#}
+    
+	#lab <- tk2label(tt)
+	#tkpack(lab)
+	#tkconfigure(lab, text = 'What would you like to do?')
+	#SAVE.but <- tkbutton(tt, text="Save Table & Close", padx=2, pady=2, command = onSave)
+	#CLOSE.but <- tkbutton(tt, text="Close", padx=2, pady=2, command = onClose)
+	#tkpack(SAVE.but, CLOSE.but, padx = 5, pady = 5)
+	
+	#This part is run only in the case of an invasion starting from ONE source
+	#So that we can use the average euclidean distance from the center (invasion point)
+	#when comparing the expasion rate of simulation Vs. theoretical uniform distribution
+	###if (nrow(starting_colonies) == 1)###
+	#Radial Increase general formula: [sqrt(A1)/pi - sqrt(A0)/pi ] / t1- t0	
+	
+	#Final message of simulation is over
+	tkmessageBox(title = "Message", message = paste('Final statistics saved to main folder!',
+				'Please check the R console for next question', sep='\n') ,icon = "info", type = "ok")
+	write.table(Area_dataset, 'Final_Stats.csv', row.names=F, sep=',')
+			
 }
 
 ##OCCUPANCY ENVELOPE MODULE
@@ -1052,12 +1219,12 @@ summary.stats <- function()
 envelope.raster <- function()
 {
 	cat('\n\n')
-	cat('Would you Like To Compute An Occupancy Envelope?\n(defined as areas/cells covered >= X% of all MonteCarlo runs):')
+	cat('Would you like to compute a X% occupancy raster?\nCells will have a value of "1" if they have been occupied at least X% of all MonteCarlo runs, "NA" otherwise:')
 	choice <- menu(c('Yes','No'))
 
 	while (choice != 2) {
 		
-		cat('Please Select the Occupancy Threshold (in %) You Would Like To Analyze?')
+		cat('Please select the occupancy threshold (in %) you would like to compute')
 		occ_thrs <- menu(c('>0%','>=25%','>=50%','>=75%','100%'))
 		
 		#Create a variable with all the simulation years, repeated based on the nbr. of MonteCarlo runs
@@ -1069,8 +1236,11 @@ envelope.raster <- function()
 		#LOOP through each simulation year
 		for (yrs in start_time:end_time){
 			
+			#path to file name 
+			path <- file.path(mainDir, workdir_Raster)
+			
 			#Store full path and name of all raster files corresponding to the current year of the LOOP 
-			etiq <- paste(workdir_Raster,'Run',seq(NRuns),'_',yrs,'.img',sep='')
+			etiq <- paste(path,'/Run',seq(NRuns),'_',yrs,'.img',sep='')
 			
 			#Use the stack() function of the 'raster' package to stack all layers stored in 'etiq'
 			#Note: our rasters only have 1 band...in case you have multispectral images you can add that
@@ -1087,7 +1257,7 @@ envelope.raster <- function()
 					MaskValue <- NRuns * 0
 					Overlap[Overlap == MaskValue] <- NA
 					Overlap[Overlap > MaskValue] <- 1
-					writeRaster(Overlap,filename=paste(workdir_Raster,'Occupancy',yrs,'_0','.img',sep=''),
+					writeRaster(Overlap,filename=file.path(mainDir, workdir_Raster,paste('Occupancy',yrs,'_0','.img',sep='')),
 								format='HFA', datatype='LOG1S', overwrite=TRUE)
 			}else if (occ_thrs == 2){
 					tag <- '>=25%'
@@ -1095,7 +1265,7 @@ envelope.raster <- function()
 					MaskValue <- NRuns * 0.25
 					Overlap[Overlap < MaskValue] <- NA
 					Overlap[Overlap >= MaskValue] <- 1
-					writeRaster(Overlap,filename=paste(workdir_Raster,'Occupancy',yrs,'_25','.img',sep=''),
+					writeRaster(Overlap,filename=file.path(mainDir, workdir_Raster,paste('Occupancy',yrs,'_25','.img',sep='')),
 								format='HFA', datatype='LOG1S', overwrite=TRUE)
 			}else if (occ_thrs == 3){
 					tag <- '>=50%'
@@ -1103,7 +1273,7 @@ envelope.raster <- function()
 					MaskValue <- NRuns * 0.5
 					Overlap[Overlap < MaskValue] <- NA
 					Overlap[Overlap >= MaskValue] <- 1
-					writeRaster(Overlap,filename=paste(workdir_Raster,'Occupancy',yrs,'_50','.img',sep=''),
+					writeRaster(Overlap,filename=file.path(mainDir, workdir_Raster,paste('Occupancy',yrs,'_50','.img',sep='')),
 								format='HFA', datatype='LOG1S', overwrite=TRUE)
 			}else if (occ_thrs == 4){
 					tag <- '>=75%'
@@ -1111,7 +1281,7 @@ envelope.raster <- function()
 					MaskValue <- NRuns * 0.75
 					Overlap[Overlap < MaskValue] <- NA
 					Overlap[Overlap >= MaskValue] <- 1
-					writeRaster(Overlap,filename=paste(workdir_Raster,'Occupancy',yrs,'_75','.img',sep=''),
+					writeRaster(Overlap,filename=file.path(mainDir, workdir_Raster,paste('Occupancy',yrs,'_75','.img',sep='')),
 								format='HFA', datatype='LOG1S', overwrite=TRUE)
 			}else{
 				tag <- '100%'
@@ -1119,28 +1289,28 @@ envelope.raster <- function()
 				MaskValue <- NRuns 
 				Overlap[Overlap < MaskValue] <- NA
 				Overlap[Overlap == MaskValue] <- 1
-				writeRaster(Overlap,filename=paste(workdir_Raster,'Occupancy',yrs,'_100','.img',sep=''),
+				writeRaster(Overlap,filename=file.path(mainDir, workdir_Raster,paste('Occupancy',yrs,'_100','.img',sep='')),
 							format='HFA', datatype='LOG1S', overwrite=TRUE)
 			}
 		
 		}
 		
 		##Delete all single raster files (comment this line in case you want to keep all of them)
-		path <- 'C:/Temp/Raster'
 		do.call(file.remove,list(list.files(path, pattern='Run',full.names=TRUE)))
 		
 		##Now you have all raster files ready to be visualized in any GIS software, showing areas/pixels occupied
 		##In more than X% of the MonteCarlo simulation runs
-		cat('\n')
-		cat(paste('Computed', tag, 'Occupancy Envelope Raster & Saved To Folder'))
-		cat('\n\n')
+		tkmessageBox(title = "Message", message = paste(tag,'occupancy raster has been saved to the Raster folder')
+					, icon = "info", type = "ok")
 		
-		cat('Would you Like To Compute Another Occupancy Envelope?')
+		cat('\n')
+		
+		cat('Would you like to compute another occupancy raster?')
 		choice <- menu(c('Yes','No'))
 	}
 	
-	cat('\n\n...CLOSE THE CONSOLE WINDOW\n')
-
+	tkmessageBox(title = "Message", message = 'Done!', icon = "info", type = "ok")
+	#END
 }
 
 
