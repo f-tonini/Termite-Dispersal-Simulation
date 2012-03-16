@@ -1172,34 +1172,6 @@ summary.stats <- function()
 		}
 	}
 	
-	#create a new tk window and store the table with result into it
-	#tt <- tktoplevel()
-	#tktitle(tt) <- 'Final Statistics'
-	#table1 <- tkwidget(tt,"table",variable=tclarray,rows=nrow(myArray),cols=ncol(myArray),titlerows=1,
-	#selectmode="extended",colwidth=20,background="white")
-	#pack it and show on screen
-	#tkpack(table1)
-	
-	#onSave <- function() {
-		
-		#write.table(Area_dataset, 'Table.csv', row.names=F, sep=',')
-		#tkmessageBox(title = "Message", message = paste('Table saved to main folder!', 
-		#			'Please check the R console for next question',sep='\n'), icon = "info", type = "ok")
-		#tkdestroy(tt)
-    #}
-	
-    #onClose <- function() {
-		#tkmessageBox(title = "Message", message = 'Please check the R console for next question', icon = "info", type = "ok")
-		#tkdestroy(tt)
-	#}
-    
-	#lab <- tk2label(tt)
-	#tkpack(lab)
-	#tkconfigure(lab, text = 'What would you like to do?')
-	#SAVE.but <- tkbutton(tt, text="Save Table & Close", padx=2, pady=2, command = onSave)
-	#CLOSE.but <- tkbutton(tt, text="Close", padx=2, pady=2, command = onClose)
-	#tkpack(SAVE.but, CLOSE.but, padx = 5, pady = 5)
-	
 	#This part is run only in the case of an invasion starting from ONE source
 	#So that we can use the average euclidean distance from the center (invasion point)
 	#when comparing the expasion rate of simulation Vs. theoretical uniform distribution

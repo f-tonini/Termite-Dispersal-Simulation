@@ -1156,37 +1156,11 @@ summary.stats <- function()
 			for (j in 0:ncol(myArray)-1) tclarray[[i,j]] <- myArray[i+1,j+1]
 		}	
 	}
-	
-	#create a new tk window and store the table with result into it
-	#tt <- tktoplevel()
-	#tktitle(tt) <- 'Final Statistics'
-	#table1 <- tkwidget(tt,"table",variable=tclarray,rows=nrow(myArray),cols=ncol(myArray),titlerows=1,
-	#selectmode="extended",colwidth=18,background="white")
-	#pack it and show on screen
-	#tkpack(table1)
-	
-	
-	#onSave <- function() {
 		
-	#	write.table(Area_dataset, 'Table.csv', row.names=F, sep=',')
-	#	tkmessageBox(title = "Message", message = 'Table saved to main folder!', icon = "info", type = "ok")
-	#	tkdestroy(tt)
-    #}
-	
-    #onClose <- function() tkdestroy(tt)
-    
-	#lab <- tk2label(tt)
-	#tkpack(lab)
-	#tkconfigure(lab, text = 'What would you like to do?')
-	#SAVE.but <- tkbutton(tt, text="Save Table & Close", padx=2, pady=2, command = onSave)
-	#CLOSE.but <- tkbutton(tt, text="Close", padx=2, pady=2, command = onClose)
-	#tkpack(SAVE.but, CLOSE.but, padx = 5, pady = 5)
-	
 	#Final message of simulation is over
 	tkmessageBox(title = "Message", message = 'Final statistics saved to main folder!', icon = "info", type = "ok")
 	write.table(Area_dataset, 'Final_Stats.csv', row.names=F, sep=',')
-	
-    #END  
+	  
 }
 
 
