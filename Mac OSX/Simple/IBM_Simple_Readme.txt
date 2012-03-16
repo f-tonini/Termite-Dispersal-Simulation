@@ -59,7 +59,7 @@ Associate the labels with the correct column...the code will assume that under t
 'latitude' you pasted the right numbers corresponding to 'latitude' values, not to a 'longitude' ones!!
 *****************************************************************************************************************
 
-(5) On console type setwd ('~/Desktop/Temp') and click ENTER. Then type source('IBM_Simple.r') and press ENTER 
+(5) On console type setwd('~/Desktop/Temp') and click ENTER. Then type source('IBM_Simple.r') and press ENTER 
 
 
 (6) The simulation starts: enter all parameters you are asked for and read carefully all the options you see
