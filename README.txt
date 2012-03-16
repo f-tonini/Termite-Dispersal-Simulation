@@ -1,5 +1,5 @@
 ********************
-*  READ CAREFULLY  *
+  READ CAREFULLY  
 ********************
 
 + If you are going to run the code under a Mac OSX environment, look only into the main Mac OSX folder.
