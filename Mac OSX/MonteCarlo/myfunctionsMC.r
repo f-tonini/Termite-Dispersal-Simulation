@@ -297,13 +297,8 @@ habitat.survival <- function(input)
 	# as the polygon data -- BUT ONLY BECAUSE WE KNOW THIS IS THE CASE!
 	proj4string(SpatPntDataFrame) <- proj4string(habitat_block)
 	
-	# combine is.na() with over() to do the containment test; note that we
-	# need to 'denote' the layer to either a SpatialPolygons or SpatialGrid object first
-	if(class(habitat_block)[1] == 'SpatialPolygonsDataFrame') {
-		inside.layer <- which(!is.na(over(SpatPntDataFrame, habitat_block))) 
-	}else{
-		inside.layer <- which(!is.na(over(SpatPntDataFrame, habitat_block)))
-	}
+	# combine is.na() with over() to do the containment test
+	inside.layer <- which(!is.na(over(SpatPntDataFrame, habitat_block))) 
 	
 	if (length(inside.layer) > 0) {
 	
@@ -1095,7 +1090,8 @@ summary.stats <- function()
 			Area_dataset$MEAN2 <- round(MEAN2,2)
 			Area_dataset$SD2 <- round(SD2,2)
 			CV2 <- round(SD2 / MEAN2, 2)
-			if(!is.finite(CV2)) Area_dataset$CV2 <- 0 else Area_dataset$CV2 <- round(SD2 / MEAN2, 2)
+			#if(!is.finite(CV2)) Area_dataset$CV2 <- 0 else Area_dataset$CV2 <- round(SD2 / MEAN2, 2)
+			Area_dataset$CV2 <- round(SD2 / MEAN2, 2)
 	
 			Area_dataset$EuclDistSpeed <- 0 
 			Area_dataset$EuclDistGrowth <- 0

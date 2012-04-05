@@ -297,14 +297,9 @@ habitat.survival <- function(input)
 	# as the polygon data -- BUT ONLY BECAUSE WE KNOW THIS IS THE CASE!
 	proj4string(SpatPntDataFrame) <- proj4string(habitat_block)
 	
-	# combine is.na() with over() to do the containment test; note that we
-	# need to 'denote' the layer to either a SpatialPolygons or SpatialGrid object first
-	if(class(habitat_block)[1] == 'SpatialPolygonsDataFrame') {
-		inside.layer <- which(!is.na(over(SpatPntDataFrame, habitat_block))) 
-	}else{
-		inside.layer <- which(!is.na(over(SpatPntDataFrame, habitat_block)))
-	}
-	
+	# combine is.na() with over() to do the containment test
+	inside.layer <- which(!is.na(over(SpatPntDataFrame, habitat_block))) 
+
 	if (length(inside.layer) > 0) {
 	
 		input <- input[-inside.layer,]
