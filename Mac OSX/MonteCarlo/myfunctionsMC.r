@@ -794,15 +794,15 @@ offspring.generate <- function(survival_prob, male_prob, scenario, dist.mean)
 	if (scenario == 'optimistic'){
 				
 		alates <- ifelse(colonies$Age < ColAge_swarmers, 0, 100000)
-		alates <- ifelse(colonies$Age >= ColAge_swarmers & colonies$Age < 10, 1000, alates)			
-		alates <- ifelse(colonies$Age >= ColAge_swarmers & colonies$Age < 15, 10000, alates)
+		alates <- ifelse(colonies$Age >= ColAge_swarmers & colonies$Age < 10, 1000, alates)
+		alates <- ifelse(colonies$Age >= 10 & colonies$Age < 15, 10000, alates)
 			
 	}else if (scenario == 'pessimistic'){
 			
 		#TODO:: CHANGE IF NEEDED
 		alates <- ifelse(colonies$Age < ColAge_swarmers, 0, 100000)
 		alates <- ifelse(colonies$Age >= ColAge_swarmers & colonies$Age < ColAge_swarmers * 2, 10000, alates)
-		alates <- ifelse(colonies$Age >= ColAge_swarmers & colonies$Age < ColAge_swarmers * 3, 50000, alates)
+		alates <- ifelse(colonies$Age >= ColAge_swarmers * 2 & colonies$Age < ColAge_swarmers * 3, 50000, alates)
 	}
 		
 	indiv <- alates * survival_prob
