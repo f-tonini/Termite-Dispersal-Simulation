@@ -2,12 +2,15 @@
 # Name:         CA_MonteCarlo.r
 # Purpose:      MonteCarlo Cellular Automata Simulation test file. Stand-alone script. 
 # Author:       Francesco Tonini
-# Email:        f_tonini@hotmail.com
+# Email:        ftonini84@gmail.com
 # Created:      09/20/2013
 # Copyright:    (c) 2013 by Francesco Tonini
 # License:    	GNU General Public License (GPL)
-# Software:     Tested successfully using R-2.15 64-bit version(http://www.r-project.org/)
+# Software:     Tested successfully using R-3.0.2 (http://www.r-project.org/)
 #-----------------------------------------------------------------------------------------
+
+#install packages
+#install.packages(c("rgdal","raster","lubridate","rgrass7","optparse", "plotrix"))
 
 ##Define the main working directory
 ##Make sure to specify the appropriate path using either / or \\ to specify the path 
