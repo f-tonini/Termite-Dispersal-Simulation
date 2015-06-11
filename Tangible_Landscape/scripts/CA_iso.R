@@ -5,7 +5,7 @@
 # Email:        ftonini84@gmail.com
 # Created:      09/20/2013
 # Copyright:    (c) 2013 by Francesco Tonini
-# License:    	GNU General Public License (GPL)
+# License:      GNU General Public License (GPL)
 # Software:     Tested successfully using R version 3.0.2 (http://www.r-project.org/)
 #-----------------------------------------------------------------------------------------
 
@@ -132,80 +132,80 @@ ypos <- bbox(I_rast)[2,2] - 150
 
 alates_rast <- colonies_rast
 alates_rast[] <- 0
-	
+
 ##LOOP for each year
 for (tt in tstep){
   
   #split date string for raster time stamp
   split_date <- unlist(strsplit(tt, '-'))
-
-	if (tt == tstep[1]) {
-		
-	  if(!any(unlist(colonies_lst) > 0)) stop('Simulation ended. There are no more termite colonies on the landscape!')
+  
+  if (tt == tstep[1]) {
     
-	  ##CALCULATE OUTPUT TO PLOT:
-	  # 1) values as % colonized (infected) hectare
-	  colonies_rast[] <- ifelse(colonies_rast[] == 0, NA, round(colonies_rast[]/maxdensity, 1))
+    if(!any(unlist(colonies_lst) > 0)) stop('Simulation ended. There are no more termite colonies on the landscape!')
+    
+    ##CALCULATE OUTPUT TO PLOT:
+    # 1) values as % colonized (infected) hectare
+    colonies_rast[] <- ifelse(colonies_rast[] == 0, NA, round(colonies_rast[]/maxdensity, 1))
     
     # 2) number of colonies per hectare
     colonies_rast[] <- ifelse(colonies_rast[] == 0, NA, colonies_rast[])
     
-	  # 3) values as 0 (non infected) and 1 (infected) cell
-	  #colonies_rast[] <- ifelse(colonies_rast[] > 0, 1, 0) 
-	  #colonies_rast[] <- ifelse(colonies_rast[] > 0, 1, NA) 
+    # 3) values as 0 (non infected) and 1 (infected) cell
+    #colonies_rast[] <- ifelse(colonies_rast[] > 0, 1, 0) 
+    #colonies_rast[] <- ifelse(colonies_rast[] > 0, 1, NA) 
     
-	  #PLOT: overlay current plot on background image
-	  #bks <- seq(0, 100, by=10)
-	  #bks <- seq(0, mx, length = 10)
-	  bks <- c(0, 0.25, 0.5, 0.75, 1)
-	  #colors <- c("yellow","gold","orange","red")
-	  image(colonies_rast, breaks=bks, col=rev(heat.colors(length(bks)-1, alpha=1)), axes=F, ann=F, useRaster=T,add=T, xaxs = "i", yaxs = "i")
-	  boxed.labels(xpos, ypos, tt, bg="white", border=NA, font=2)
+    #PLOT: overlay current plot on background image
+    #bks <- seq(0, 100, by=10)
+    #bks <- seq(0, mx, length = 10)
+    bks <- c(0, 0.25, 0.5, 0.75, 1)
+    #colors <- c("yellow","gold","orange","red")
+    image(colonies_rast, breaks=bks, col=rev(heat.colors(length(bks)-1, alpha=1)), axes=F, ann=F, useRaster=T,add=T, xaxs = "i", yaxs = "i")
+    boxed.labels(xpos, ypos, tt, bg="white", border=NA, font=2)
     
-	  #WRITE TO FILE:
-	  colonies_rast_sp <- as(colonies_rast, 'SpatialGridDataFrame')
-	  writeRAST(colonies_rast_sp, vname=paste(opt$output, '_', sprintf(formatting_str, 0), sep=''), overwrite=TRUE) #write to GRASS raster file
-	  execGRASS('r.timestamp', map=paste(opt$output, '_', sprintf(formatting_str, cnt), sep=''), date=paste(split_date[3], 'jun', split_date[1]))
-	  
-	  #writeRaster(colonies_rast, filename=paste('./', fOutput, '/', opt$output, '_', sprintf(formatting_str, 0), sep=''), format='HFA', datatype='FLT4S', overwrite=TRUE) # % infected as output
-	  #writeRaster(colonies_rast, filename=paste('./', fOutput, '/', opt$output, '_', sprintf(formatting_str, 0), sep=''), format='HFA', datatype='INT1U', overwrite=TRUE) # nbr. colonies as output
-	  #writeRaster(colonies_rast, filename=paste('./', fOutput, '/', opt$output, '_', sprintf(formatting_str, 0), sep=''), format='HFA', datatype='LOG1S', overwrite=TRUE)  # 0=non infected 1=infected output
-			
-	}else{	
-			
-		##Increase age by 1 in those cells with at least one colony inside
-	  age_lst <- lapply(age_lst, FUN=function(x){ if (!is.null(x)) x <- x + 1 })
-			
-		##Remove colonies over MaxAge...
-		age_lst <- lapply(age_lst, FUN=max.age_fun)
-			
-		##Whenever a single element within age list has no more colonies inside (died b/c of age),
-		##update the corresponding list element in colony list and set it == 0 
-		colonies_lst <- mapply(FUN=function(x,y){ if(is.null(x)) y <- 0 else y; return(list(y)) } , age_lst, colonies_lst) 
-			
-		if ( !any(unlist(colonies_lst) > 0) ) stop('Simulation ended. There are no more termite colonies on the landscape!')
-					
-		##Generate total number of offspring per cell by using the age of each existing colony
-		alates_lst <- lapply(age_lst, FUN=function(x){if (!is.null(x)) alates.gen(x, scenario=opt$scenario)})
-		alates_cnt <- lapply(alates_lst, FUN=function(x){if(is.null(x))x <- 0 else sum(x)})
-
-		alates_rast[] <- unlist(alates_cnt)
-		alates_rast <- round(focal(alates_rast, w=probKernel, fun=sum))
-		
-		##remove alates from unsuitable habitat
-		alates_rast[habitat_block[] == 1] <- 0
-
-		new.colonies_rast <- alates_rast
-		##use look-up table now to decide how many new colonies based on alates number in each cell
+    #WRITE TO FILE:
+    colonies_rast_sp <- as(colonies_rast, 'SpatialGridDataFrame')
+    writeRAST(colonies_rast_sp, vname=paste(opt$output, '_', sprintf(formatting_str, 0), sep=''), overwrite=TRUE) #write to GRASS raster file
+    execGRASS('r.timestamp', map=paste(opt$output, '_', sprintf(formatting_str, cnt), sep=''), date=paste(split_date[3], 'jun', split_date[1]))
+    
+    #writeRaster(colonies_rast, filename=paste('./', fOutput, '/', opt$output, '_', sprintf(formatting_str, 0), sep=''), format='HFA', datatype='FLT4S', overwrite=TRUE) # % infected as output
+    #writeRaster(colonies_rast, filename=paste('./', fOutput, '/', opt$output, '_', sprintf(formatting_str, 0), sep=''), format='HFA', datatype='INT1U', overwrite=TRUE) # nbr. colonies as output
+    #writeRaster(colonies_rast, filename=paste('./', fOutput, '/', opt$output, '_', sprintf(formatting_str, 0), sep=''), format='HFA', datatype='LOG1S', overwrite=TRUE)  # 0=non infected 1=infected output
+    
+  }else{	
+    
+    ##Increase age by 1 in those cells with at least one colony inside
+    age_lst <- lapply(age_lst, FUN=function(x){ if (!is.null(x)) x <- x + 1 })
+    
+    ##Remove colonies over MaxAge...
+    age_lst <- lapply(age_lst, FUN=max.age_fun)
+    
+    ##Whenever a single element within age list has no more colonies inside (died b/c of age),
+    ##update the corresponding list element in colony list and set it == 0 
+    colonies_lst <- mapply(FUN=function(x,y){ if(is.null(x)) y <- 0 else y; return(list(y)) } , age_lst, colonies_lst) 
+    
+    if ( !any(unlist(colonies_lst) > 0) ) stop('Simulation ended. There are no more termite colonies on the landscape!')
+    
+    ##Generate total number of offspring per cell by using the age of each existing colony
+    alates_lst <- lapply(age_lst, FUN=function(x){if (!is.null(x)) alates.gen(x, scenario=opt$scenario)})
+    alates_cnt <- lapply(alates_lst, FUN=function(x){if(is.null(x))x <- 0 else sum(x)})
+    
+    alates_rast[] <- unlist(alates_cnt)
+    alates_rast <- round(focal(alates_rast, w=probKernel, fun=sum))
+    
+    ##remove alates from unsuitable habitat
+    alates_rast[habitat_block[] == 1] <- 0
+    
+    new.colonies_rast <- alates_rast
+    ##use look-up table now to decide how many new colonies based on alates number in each cell
     new.colonies_rast[] <- sapply(alates_rast[], FUN=function(x) newCol.gen(x, tab=nCol_table))
     new.colonies_lst <- sapply(new.colonies_rast[], FUN=list)	
-			
-		out <- newCol.addAge(l1 = age_lst, l2 = colonies_lst, l3 = new.colonies_lst)		
+    
+    out <- newCol.addAge(l1 = age_lst, l2 = colonies_lst, l3 = new.colonies_lst)		
     age_lst <- out$age
     colonies_lst <- out$cl
-			
-		rm(new.colonies_lst)
-			
+    
+    rm(new.colonies_lst)
+    
     colonies_rast[] <- unlist(colonies_lst)
     
     ##CALCULATE OUTPUT TO PLOT:
@@ -235,13 +235,9 @@ for (tt in tstep){
     #writeRaster(colonies_rast, filename=paste('./', fOutput, '/', opt$output, '_', sprintf(formatting_str, 0), sep=''), format='HFA', datatype='FLT4S', overwrite=TRUE) # % infected as output
     #writeRaster(colonies_rast, filename=paste('./', fOutput, '/', opt$output, '_', sprintf(formatting_str, 0), sep=''), format='HFA', datatype='INT1U', overwrite=TRUE) # nbr. colonies as output
     #writeRaster(colonies_rast, filename=paste('./', fOutput, '/', opt$output, '_', sprintf(formatting_str, 0), sep=''), format='HFA', datatype='LOG1S', overwrite=TRUE)  # 0=non infected 1=infected output
-
-	}
+    
+  }
 }
 
 message("Spread model finished")
-
-
-
-
 
