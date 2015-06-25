@@ -96,7 +96,7 @@ Survival <- opt$surv
 SexRatio  <- opt$sex  
 
 ##Read look-up table for number of new colonies
-nCol_table <- read.table(paste(opt$tab,'.csv', sep=''), header = T, stringsAsFactors = F, sep=',')
+nCol_table <- read.table(paste('./layers/',opt$tab,'.csv', sep=''), header = T, stringsAsFactors = F, sep=',')
 nCol_table <- nCol_table[nCol_table$ratio == SexRatio, ]
 
 ##Dispersal kernel:
