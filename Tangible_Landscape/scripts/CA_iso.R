@@ -39,7 +39,7 @@ source('./scripts/myfunctions_CA.r')
 
 ###Input simulation parameters: #####
 option_list = list(
-  make_option(c("-h","--habitat"), action="store", default=NA, type='character', help="input suitable habitat raster map (mask)"),
+  make_option(c("-b","--habitat"), action="store", default=NA, type='character', help="input suitable habitat raster map (mask)"),
   make_option(c("-src","--sources"), action="store", default=NA, type='character', help="initial sources of infection shapefile"),
   make_option(c("-img","--image"), action="store", default=NA, type='character', help="background satellite raster image for plotting"),
   make_option(c("-s","--start"), action="store", default=NA, type='integer', help="start year"),
@@ -53,7 +53,7 @@ option_list = list(
   make_option(c("-sx","--sex"), action="store", default=0.5, type='numeric', help="sex ratio (male prevalence)"),
   make_option(c("-kd","--kdist"), action="store", default=NA, type='numeric', help="max distance (meters) covered by the dispersal kernel window"),
   make_option(c("-kt","--ktype"), action="store", default='exp', type='character', help="dispersal kernel distribution"),
-  make_option(c("-o","--output"), action="store", default=NA, type='character', help="basename for output GRASS raster maps"),
+  make_option(c("-o","--output"), action="store", default=NA, type='character', help="basename for output GRASS raster maps")
 )
 
 opt = parse_args(OptionParser(option_list=option_list))
@@ -65,8 +65,10 @@ habitat_block <- raster(habitat_block)  #transform 'sp' obj to 'raster' obj
 #habitat_block <- raster('./layers/habitat_block')
 
 ##Initial sources of infestation:
-src_pnt <- readVECT(opt$sources)
-#src_pnt <- readOGR('./layers', layer = 'init_colonies')
+
+#src_pnt <- readVECT(opt$sources)
+
+src_pnt <- readOGR('./layers', layer = 'init_colonies')
 
 ##background satellite image for plotting
 bkr_img <- raster(paste('./layers/', opt$image, sep='')) 
@@ -127,12 +129,13 @@ windows(width = 10, height = 10, xpos=350, ypos=50, buffered = FALSE)
 #plot background image
 plot(bkr_img)
 #plot coordinates for plotting text:
-xpos <- (bbox(I_rast)[1,2] + bbox(I_rast)[1,1]) / 2
-ypos <- bbox(I_rast)[2,2] - 150
+xpos <- (bbox(habitat_block)[1,2] + bbox(habitat_block)[1,1]) / 2
+ypos <- bbox(habitat_block)[2,2] - 150
 
 alates_rast <- colonies_rast
 alates_rast[] <- 0
 
+cnt <- 0
 ##LOOP for each year
 for (tt in tstep){
   
@@ -173,6 +176,7 @@ for (tt in tstep){
     
   }else{	
     
+    cnt <- cnt + 1
     ##Increase age by 1 in those cells with at least one colony inside
     age_lst <- lapply(age_lst, FUN=function(x){ if (!is.null(x)) x <- x + 1 })
     
@@ -229,7 +233,7 @@ for (tt in tstep){
     
     #WRITE TO FILE:
     colonies_rast_sp <- as(colonies_rast, 'SpatialGridDataFrame')
-    writeRAST(colonies_rast_sp, vname=paste(opt$output, '_', sprintf(formatting_str, 0), sep=''), overwrite=TRUE) #write to GRASS raster file
+    writeRAST(colonies_rast_sp, vname=paste(opt$output, '_', sprintf(formatting_str, cnt), sep=''), overwrite=TRUE) #write to GRASS raster file
     execGRASS('r.timestamp', map=paste(opt$output, '_', sprintf(formatting_str, cnt), sep=''), date=paste(split_date[3], 'jun', split_date[1]))
     
     #writeRaster(colonies_rast, filename=paste('./', fOutput, '/', opt$output, '_', sprintf(formatting_str, 0), sep=''), format='HFA', datatype='FLT4S', overwrite=TRUE) # % infected as output
