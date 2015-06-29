@@ -151,7 +151,7 @@ for (tt in tstep){
     colonies_rast[] <- ifelse(colonies_rast[] == 0, NA, round(colonies_rast[]/maxdensity, 1))
     
     # 2) number of colonies per hectare
-    colonies_rast[] <- ifelse(colonies_rast[] == 0, NA, colonies_rast[])
+    #colonies_rast[] <- ifelse(colonies_rast[] == 0, NA, colonies_rast[])
     
     # 3) values as 0 (non infected) and 1 (infected) cell
     #colonies_rast[] <- ifelse(colonies_rast[] > 0, 1, 0) 
@@ -194,7 +194,7 @@ for (tt in tstep){
     alates_cnt <- lapply(alates_lst, FUN=function(x){if(is.null(x))x <- 0 else sum(x)})
     
     alates_rast[] <- unlist(alates_cnt)
-    alates_rast <- round(focal(alates_rast, w=probKernel, fun=sum))
+    alates_rast <- round(focal(alates_rast, w=probKernel, fun=sum, pad=T, padValue=0))
     
     ##remove alates from unsuitable habitat
     alates_rast[habitat_block[] == 1] <- 0
@@ -217,7 +217,7 @@ for (tt in tstep){
     colonies_rast[] <- ifelse(colonies_rast[] == 0, NA, round(colonies_rast[]/maxdensity, 1))
     
     # 2) number of colonies per hectare
-    colonies_rast[] <- ifelse(colonies_rast[] == 0, NA, colonies_rast[])
+    #colonies_rast[] <- ifelse(colonies_rast[] == 0, NA, colonies_rast[])
     
     # 3) values as 0 (non infected) and 1 (infected) cell
     #colonies_rast[] <- ifelse(colonies_rast[] > 0, 1, 0) 
