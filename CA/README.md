@@ -1,12 +1,8 @@
 [Simple](Simple): this subfolder cointains all the .r script files and readme.txt file that should be used in case you are 
             interested in running a SINGLE simulation over a given time span (e.g. from 1990-2000, etc.).
-            Read carefully the README file within the 'Simple' folder before trying to run any code as it
-            has instructions to set up the workspace environment. 
 
 [MonteCarlo](MonteCarlo): this subfolder contains all the .r script files and readme.txt file that should be used in case you are
                interested in running MULTIPLE (MonteCarlo) simulations over the same time span (e.g. from 1990-2000, etc.).
-               Read carefully the README file within the 'MonteCarlo' folder before trying to run any code as it
-               has instructions to set up the workspace environment.
 
 The MonteCarlo simulation is recommended if you are interested in having a robust and more precise estimation
 of the areas that could potentially be infested over time. This because a single simulation run only gives one
