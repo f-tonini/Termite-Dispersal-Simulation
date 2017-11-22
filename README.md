@@ -16,5 +16,11 @@ The Tangible Landscape folder contains all R scripts used for the integration of
 
 Please check out the README files inside each main folder for more detailed instructions on how to set up and run the scripts.
 
+## Contacts
 
+Francesco Tonini: <ftonini84@gmail.com>
+
+## License
+
+[Apache 2.0](LICENSE)
 
