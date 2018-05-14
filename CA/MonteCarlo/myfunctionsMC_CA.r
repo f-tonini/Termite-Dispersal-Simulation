@@ -45,7 +45,7 @@ read.NSHabitat <- function(layer, grain, PolyToRaster = FALSE)
 	file.ext <- unlist(strsplit(layer, '\\.'))[2]
 	
 	##Strip the name from the file name
-	file.name <- unlist(strsplit(layer, '\\.'))[1]
+	file.name <- unlist(strsplit(basename(layer), '\\.'))[1]
 		
 	##If the file extension is .shp read the vector file using
 	##the readOGR() function from the rgdal package
@@ -54,14 +54,14 @@ read.NSHabitat <- function(layer, grain, PolyToRaster = FALSE)
 	if (any(file.ext %in% OGR_ext)) { 
 	
 		#For 'rgdal' library all supported OGR data formats are listed under ogrDrivers()
-		habitat_block <- readOGR('.', layer = file.name)
+		habitat_block <- readOGR(dsn=dirname(layer), layer = file.name)
 		
 		##Check if the background layer is georeferenced
 		if (!is.na(proj4string(habitat_block))){
 		
 			##If the coord. system of the layer is Geographic ("LAT-LON")
 			##Ask the user to define parameters of a Projected coord. system
-			if(substring(proj4string(habitat_block),8,14) == 'longlat'){
+			if(substring(proj4string(habitat_block),7,13) == 'longlat'){
 				
 				cat('UTM zone (e.g. 17):\n')
 				UTM_zone <- scan(n=1,what='')
